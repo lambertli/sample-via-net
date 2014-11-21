@@ -17,7 +17,7 @@ namespace Sample
         public virtual void Run()
         {
             watch.Restart();
-            Console.WriteLine("Begin runing test samples...");
+            Console.WriteLine("Begin runing test samples {0}...", this.GetType().Name);
             if (methodHandler != null)
             {
                 methodHandler();

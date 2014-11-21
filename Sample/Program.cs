@@ -1,4 +1,5 @@
 ﻿using Sample.DesignPatterns;
+using Sample.Framework45;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,8 @@ namespace Sample
         {
             IList<Executor> executors = new List<Executor> 
             {
-                new Singleton()
+                new Singleton(),
+                new SystemLazy()
             };
 
             foreach(var executor in executors)

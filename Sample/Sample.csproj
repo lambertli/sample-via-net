@@ -42,7 +42,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DesignPatterns\Singleton.cs" />
+    <Compile Include="Entities\LargeObject.cs" />
+    <Compile Include="Entities\SampleEntity.cs" />
     <Compile Include="Executor.cs" />
+    <Compile Include="Framework45\SystemLazy.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -50,8 +53,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Entities\" />
-    <Folder Include="Framework45\" />
     <Folder Include="Interfaces\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
