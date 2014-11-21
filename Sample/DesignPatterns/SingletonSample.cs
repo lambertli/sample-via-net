@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Sample.DesignPatterns
 {
-    class Singleton : Executor
+    class SingletonSample : Executor
     {
         private int _threadCount = 10;
 
-        public Singleton() 
+        public SingletonSample() 
         {
             base.methodHandler += this.Test_Sample_1;
             base.methodHandler += this.Test_Sample_2;

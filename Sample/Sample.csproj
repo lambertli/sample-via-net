@@ -41,11 +41,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DesignPatterns\Singleton.cs" />
+    <Compile Include="DesignPatterns\ObserverSample.cs" />
+    <Compile Include="DesignPatterns\SingletonSample.cs" />
+    <Compile Include="Entities\Animal.cs" />
+    <Compile Include="Entities\Cat.cs" />
+    <Compile Include="Entities\Dog.cs" />
     <Compile Include="Entities\LargeObject.cs" />
+    <Compile Include="Entities\Mouse.cs" />
     <Compile Include="Entities\SampleEntity.cs" />
     <Compile Include="Executor.cs" />
-    <Compile Include="Framework45\SystemLazy.cs" />
+    <Compile Include="Framework45\SystemLazySample.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

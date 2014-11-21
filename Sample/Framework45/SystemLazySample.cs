@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Sample.Framework45
 {
-    class SystemLazy : Executor
+    class SystemLazySample : Executor
     {
-        public SystemLazy()
+        public SystemLazySample()
         {
             methodHandler += Test_Sample_1;
             methodHandler += Test_Sample_2;

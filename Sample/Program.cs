@@ -14,8 +14,9 @@ namespace Sample
         {
             IList<Executor> executors = new List<Executor> 
             {
-                new Singleton(),
-                new SystemLazy()
+                new SingletonSample(),
+                new ObserverSample(),
+                new SystemLazySample()
             };
 
             foreach(var executor in executors)
