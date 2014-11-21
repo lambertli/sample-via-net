@@ -17,12 +17,12 @@ namespace Sample
         public virtual void Run()
         {
             watch.Restart();
-            Console.WriteLine("Begin runing test samples {0}...", this.GetType().Name);
+            Console.WriteLine("Begin runing sample {0}...", this.GetType().Name);
             if (methodHandler != null)
             {
                 methodHandler();
             }
-            Console.WriteLine("All test samples executed!");
+            Console.WriteLine("Sample {0} executed!", this.GetType().Name);
             watch.Stop();
         }
 

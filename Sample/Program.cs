@@ -1,5 +1,6 @@
 ﻿using Sample.DesignPatterns;
 using Sample.Framework45;
+using Sample.Keywords;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,15 +15,21 @@ namespace Sample
         {
             IList<Executor> executors = new List<Executor> 
             {
-                new SingletonSample(),
-                new ObserverSample(),
-                new SystemLazySample()
+                //new SingletonSample(),
+                //new ObserverSample(),
+                //new SystemLazySample(),
+                new SystemReflectionSample(),
+                //new DelegateSample()
             };
 
-            foreach(var executor in executors)
+            foreach (var executor in executors)
+            {
                 executor.Run();
-
-            Console.ReadKey();
+                Console.WriteLine("Enter key x to exit, other key to contiune...");
+                ConsoleKeyInfo key = Console.ReadKey();
+                if (key.Key == ConsoleKey.X)
+                    break;
+            }
         }
     }
 }

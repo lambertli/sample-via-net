@@ -29,9 +29,11 @@ namespace Sample.Entities
             Console.WriteLine("I'm a {0}, my name is {1}, zi zi..", AnimalType.ToString(), Name);
         }
 
-        public void Run(Cat c) 
+        public void Run(object sender)
         {
-            Console.WriteLine("{0} coming, {1} run away.", c.Name, this.Name);
+            Cat c = sender as Cat;
+            if (c != null)
+                Console.WriteLine("{0} coming, {1} run away.", c.Name, this.Name);
         }
     }
 }

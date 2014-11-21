@@ -38,68 +38,68 @@ namespace Sample.DesignPatterns
             subject.Detach(readers[2]);
             subject.Notify();
         }
-    }
 
-    /// <summary>
-    /// 观察者
-    /// </summary>
-    abstract class Observer
-    {
-        public abstract void Update();
-    }
-
-    /// <summary>
-    /// 发布者
-    /// </summary>
-    abstract class Subject 
-    {
-        private IList<Observer> _observers = new List<Observer>();
-
-        public void Attach(Observer observer) 
+        /// <summary>
+        /// 观察者
+        /// </summary>
+        abstract class Observer
         {
-            _observers.Add(observer);
+            public abstract void Update();
         }
 
-        public void Detach(Observer observer) 
+        /// <summary>
+        /// 发布者
+        /// </summary>
+        abstract class Subject
         {
-            _observers.Remove(observer);
+            private IList<Observer> _observers = new List<Observer>();
+
+            public void Attach(Observer observer)
+            {
+                _observers.Add(observer);
+            }
+
+            public void Detach(Observer observer)
+            {
+                _observers.Remove(observer);
+            }
+
+            public void Notify()
+            {
+                foreach (var observer in _observers)
+                    observer.Update();
+            }
         }
 
-        public void Notify() 
+        /// <summary>
+        /// 报社
+        /// </summary>
+        class NewsPaperOffer : Subject
         {
-            foreach (var observer in _observers)
-                observer.Update();
-        }
-    }
+            public NewsPaperOffer(string name)
+            {
+                this.Name = name;
+            }
 
-    /// <summary>
-    /// 报社
-    /// </summary>
-    class NewsPaperOffer : Subject
-    {
-        public NewsPaperOffer(string name) 
-        {
-            this.Name = name;
+            public string Name { get; set; }
         }
 
-        public string Name { get; set; }
-    }
-
-    /// <summary>
-    /// 订报者
-    /// </summary>
-    class NewsReader : Observer
-    {
-        public NewsReader(string name) 
+        /// <summary>
+        /// 订报者
+        /// </summary>
+        class NewsReader : Observer
         {
-            this.Name = name;
-        }
+            public NewsReader(string name)
+            {
+                this.Name = name;
+            }
 
-        public string Name { get; set; }
+            public string Name { get; set; }
 
-        public override void Update()
-        {
-            Console.WriteLine("hi {0}, have newspaper", this.Name);
+            public override void Update()
+            {
+                Console.WriteLine("hi {0}, have newspaper", this.Name);
+            }
         }
     }
 }

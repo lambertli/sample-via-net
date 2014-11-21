@@ -25,6 +25,7 @@ namespace Sample.Framework45
             {
                 Console.WriteLine("Id:{0} Title:{1}", obj.Id, obj.Title);
             }
+
             Console.WriteLine("Completed!");
         }
 
@@ -38,6 +39,7 @@ namespace Sample.Framework45
             {
                 Console.WriteLine("Id:{0} Title:{1}", obj.Value.Id, obj.Value.Title);
             }
+
             Console.WriteLine("Completed!");
         }
 
@@ -45,9 +47,9 @@ namespace Sample.Framework45
         {
             return new List<LargeObject> 
             {
-                new LargeObject{Id=1,Title="LargeObject 1"},
-                new LargeObject{Id=2,Title="LargeObject 2"},
-                new LargeObject{Id=3,Title="LargeObject 3"}
+                new LargeObject{ Id=1, Title="LargeObject 1" },
+                new LargeObject{ Id=2, Title="LargeObject 2" },
+                new LargeObject{ Id=3, Title="LargeObject 3" }
             };
         }
 
@@ -55,9 +57,9 @@ namespace Sample.Framework45
         {
             return new List<Lazy<LargeObject>> 
             {
-                new Lazy<LargeObject>(()=>{ return new LargeObject(){Id=1,Title="LargeObject 1"};}),
-                new Lazy<LargeObject>(()=>{ return new LargeObject(){Id=1,Title="LargeObject 1"};}),
-                new Lazy<LargeObject>(()=>{ return new LargeObject(){Id=1,Title="LargeObject 1"};})
+                new Lazy<LargeObject>(()=>{ return new LargeObject(){ Id=1, Title="LargeObject 1" }; }),
+                new Lazy<LargeObject>(()=>{ return new LargeObject(){ Id=2, Title="LargeObject 2" }; }),
+                new Lazy<LargeObject>(()=>{ return new LargeObject(){ Id=3, Title="LargeObject 3" }; })
             };
         }
     }

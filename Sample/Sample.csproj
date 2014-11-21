@@ -51,6 +51,8 @@
     <Compile Include="Entities\SampleEntity.cs" />
     <Compile Include="Executor.cs" />
     <Compile Include="Framework45\SystemLazySample.cs" />
+    <Compile Include="Framework45\SystemReflectionSample.cs" />
+    <Compile Include="Keywords\DelegateSample.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
