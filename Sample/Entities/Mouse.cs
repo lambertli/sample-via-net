@@ -29,7 +29,7 @@ namespace Sample.Entities
             Console.WriteLine("I'm a {0}, my name is {1}, zi zi..", AnimalType.ToString(), Name);
         }
 
-        public void Run(object sender)
+        public void RunAway(object sender)
         {
             Cat c = sender as Cat;
             if (c != null)

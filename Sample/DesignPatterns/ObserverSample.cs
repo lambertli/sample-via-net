@@ -16,14 +16,8 @@ namespace Sample.DesignPatterns
             new NewsReader("小李")
         };
 
-        public ObserverSample() 
-        {
-            methodHandler += Test_Sample_Attach;
-            methodHandler += Test_Sample_Detach;
-
-        }
-
-        public void Test_Sample_Attach() 
+        [TestMethod]
+        public void Test_Attach_Observer() 
         {
             Console.WriteLine("Add three newspaper readers");
             foreach(var reader in readers)
@@ -32,7 +26,8 @@ namespace Sample.DesignPatterns
             subject.Notify();
         }
 
-        public void Test_Sample_Detach()
+        [TestMethod]
+        public void Test_Detach_Observer()
         {
             Console.WriteLine("Remove reader 小李");
             subject.Detach(readers[2]);

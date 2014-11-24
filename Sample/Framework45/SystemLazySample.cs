@@ -9,13 +9,9 @@ namespace Sample.Framework45
 {
     class SystemLazySample : Executor
     {
-        public SystemLazySample()
-        {
-            methodHandler += Test_Sample_1;
-            methodHandler += Test_Sample_2;
-        }
 
-        public void Test_Sample_1()
+        [TestMethod]
+        public void Test_Normal_Create()
         {
             Console.WriteLine("Start get larger object normal...");
 
@@ -29,7 +25,8 @@ namespace Sample.Framework45
             Console.WriteLine("Completed!");
         }
 
-        public void Test_Sample_2()
+        [TestMethod]
+        public void Test_Lazy_Create()
         {
             Console.WriteLine("Start get larger object lazy...");
 

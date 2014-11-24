@@ -13,14 +13,25 @@ namespace Sample
     {
         static void Main(string[] args)
         {
-            IList<Executor> executors = new List<Executor> 
-            {
-                //new SingletonSample(),
-                //new ObserverSample(),
-                //new SystemLazySample(),
-                new SystemReflectionSample(),
-                //new DelegateSample()
-            };
+            List<Executor> executors = new List<Executor>();
+            //Design pattern samples
+            //executors.AddRange(new List<Executor>()
+            //    {
+            //        new ObserverSample(),
+            //        new SingletonSample()
+            //    });
+            //.net framework4.5 samples
+            executors.AddRange(new List<Executor>()
+                {
+                    //new SystemLazySample(),
+                    new SystemReflectionSample()
+                });
+            //keyword samples
+            //executors.AddRange(new List<Executor>()
+            //    {
+            //        new DelegateSample()
+            //    });
+
 
             foreach (var executor in executors)
             {
@@ -29,6 +40,7 @@ namespace Sample
                 ConsoleKeyInfo key = Console.ReadKey();
                 if (key.Key == ConsoleKey.X)
                     break;
+                Console.WriteLine();
             }
         }
     }

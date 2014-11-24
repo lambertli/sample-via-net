@@ -10,14 +10,8 @@ namespace Sample.Framework45
 {
     class SystemReflectionSample : Executor
     {
-
-        public SystemReflectionSample() 
-        {
-            methodHandler += Test_Field_Sample;
-            methodHandler += Test_Method_Sample;
-        }
-
-        public void Test_Field_Sample() 
+        [TestMethod]
+        public void Test_GetField_Infos() 
         {
             MyClass target = new MyClass();
             Type type = target.GetType();
@@ -28,7 +22,8 @@ namespace Sample.Framework45
             }
         }
 
-        public void Test_Method_Sample() 
+        [TestMethod]
+        public void Test_GetMethod_Infos() 
         {
             MyClass target = new MyClass();
             Type type = target.GetType();
@@ -46,6 +41,36 @@ namespace Sample.Framework45
             {
                 Console.WriteLine("name:{0}\t params:{1} return:{2}", method.Name, method.GetParameters().Count(), method.ReturnType);
             }
+        }
+
+        [TestMethod]
+        public void Test_Create_Instance() 
+        {
+            Assembly assembly = this.GetType().Assembly;
+
+            Console.WriteLine("Create instance with non-parameters constructor.");
+            SampleEntity entity1 = assembly.CreateInstance("Sample.Entities.SampleEntity") as SampleEntity;
+            Console.WriteLine("Create by Assembly.CreateInstance {0}", entity1 == null ? "null" : entity1.ToString());
+            
+            SampleEntity entity2 = Activator.CreateInstance(typeof(SampleEntity)) as SampleEntity;
+            Console.WriteLine("Create by Activator.CreateInstance {0}", entity1 == null ? "null" : entity2.ToString());
+            
+            SampleEntity entity3 = Activator.CreateInstance<SampleEntity>();
+            Console.WriteLine("Create by Activator.CreateInstance<T> {0}", entity1 == null ? "null" : entity3.ToString());
+
+            Console.WriteLine("Create instance with parameters constructor.");
+            Cat tom = assembly.CreateInstance("Sample.Entities.Cat", true, BindingFlags.CreateInstance, null, new object[] { "Tom" }, null, null) as Cat;
+            Console.WriteLine("Create by Assembly.CreateInstance {0}", tom == null ? "null" : tom.ToString());
+
+            Cat mat = (Cat)Activator.CreateInstance(typeof(Cat),"Tome");
+            Console.WriteLine("Create by Activator.CreateInstance {0}", mat == null ? "null" : mat.ToString());
+
+            Console.WriteLine("Create instance with default<T>.");
+            Cat lee = default(Cat);
+            Console.WriteLine("Create by default {0}", lee == null ? "null" : lee.ToString());
+
+            DateTime dt = default(DateTime);
+            Console.WriteLine("Create datetime by default {0}", dt == null ? "null" : dt.ToString());
         }
 
         class MyClass 

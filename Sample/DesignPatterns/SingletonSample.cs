@@ -11,30 +11,26 @@ namespace Sample.DesignPatterns
     {
         private int _threadCount = 10;
 
-        public SingletonSample() 
-        {
-            base.methodHandler += this.Test_Sample_1;
-            base.methodHandler += this.Test_Sample_2;
-            base.methodHandler += this.Test_Sample_3;
-            base.methodHandler += this.Test_Sample_4;
-        }
-
-        public void Test_Sample_1()
+        [TestMethod]
+        public void Test_Static_Init()
         {
             TestMultiThreadCreateInstance<MyClass1>(_threadCount);
         }
 
-        public void Test_Sample_2()
+        [TestMethod]
+        public void Test_LazyInit_Without_Lock()
         {
             TestMultiThreadCreateInstance<MyClass2>(_threadCount);
         }
 
-        public void Test_Sample_3()
+        [TestMethod]
+        public void Test_With_Double_Lock()
         {
             TestMultiThreadCreateInstance<MyClass3>(_threadCount);
         }
 
-        public void Test_Sample_4()
+        [TestMethod]
+        public void Test_Lazy_Method()
         {
             TestMultiThreadCreateInstance<MyClass4>(_threadCount);
         }

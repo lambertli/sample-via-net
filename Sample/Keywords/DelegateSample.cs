@@ -21,36 +21,31 @@ namespace Sample.Keywords
             new Mouse("Gordon")
         };
 
-        public DelegateSample() 
-        {
-            methodHandler += Test_Sample_1;
-            methodHandler += Test_Sample_2;
-        }
-
         /// <summary>
         /// Delegate method
         /// </summary>
-        public void Test_Sample_1() 
+        [TestMethod]
+        public void Test_KW_Delegate() 
         {
             Console.WriteLine("Sample cat scream and mouse run awawy");
             foreach (var mouse in _mouses) 
             {
-                _cat.ScreamHandler += mouse.Run;
+                _cat.ScreamHandler += mouse.RunAway;
             }
-
             _cat.Scream();
         }
 
         /// <summary>
         /// Action method
         /// </summary>
-        public void Test_Sample_2()
+        [TestMethod]
+        public void Test_KW_Action()
         {
             Console.WriteLine("Sample cat scream and mouse run awawy");
             IList<Action> actions = new List<Action>();
             foreach (var mouse in _mouses)
             {
-                actions.Add(() => { mouse.Run(_cat); });
+                actions.Add(() => { mouse.RunAway(_cat); });
             }
 
             _cat.Scream();

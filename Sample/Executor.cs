@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,29 @@ namespace Sample
         protected delegate void TestMethodHandler();
         protected TestMethodHandler methodHandler = null;
         static Stopwatch watch = new Stopwatch();
+
+        protected Executor() 
+        {
+            AttachTestMethod();
+        }
+
+        protected virtual void AttachTestMethod()
+        {
+            Type type = this.GetType();
+            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.Static);
+            foreach (var method in methods)
+            {
+                var attr = method.GetCustomAttribute<TestMethodAttribute>();
+                if (attr != null)
+                {
+                    methodHandler += () => 
+                    {
+                        Console.WriteLine("Begin runing method {0}", method.Name);
+                        method.Invoke(this, attr.Arguments);
+                    };
+                }
+            }
+        }
 
         public virtual void Run()
         {
@@ -26,12 +50,17 @@ namespace Sample
             watch.Stop();
         }
 
-        //override Console object
+        // Override Console.Write
         public static class Console
         {
             public static void Write(string msg, params object[] args)
             {
                 System.Console.Write(msg, args);
+            }
+
+            public static void WriteLine() 
+            {
+                System.Console.WriteLine();
             }
 
             /// <summary>
