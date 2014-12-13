@@ -15,23 +15,23 @@ namespace Sample
         {
             List<Executor> executors = new List<Executor>();
             //Design pattern samples
-            //executors.AddRange(new List<Executor>()
-            //    {
-            //        new ObserverSample(),
-            //        new SingletonSample()
-            //    });
+            executors.AddRange(new List<Executor>()
+            {
+                //new ObserverSample(),
+                //new SingletonSample()
+            });
             //.net framework4.5 samples
             executors.AddRange(new List<Executor>()
-                {
-                    //new SystemLazySample(),
-                    new SystemReflectionSample()
-                });
+            {
+                //new SystemLazySample(),
+                //new SystemReflectionSample()
+            });
             //keyword samples
-            //executors.AddRange(new List<Executor>()
-            //    {
-            //        new DelegateSample()
-            //    });
-
+            executors.AddRange(new List<Executor>()
+            {
+                //new DelegateSample(),
+                new DynamicSample()
+            });
 
             foreach (var executor in executors)
             {
@@ -40,8 +40,10 @@ namespace Sample
                 ConsoleKeyInfo key = Console.ReadKey();
                 if (key.Key == ConsoleKey.X)
                     break;
+
                 Console.WriteLine();
             }
         }
+
     }
 }

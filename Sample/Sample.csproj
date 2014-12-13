@@ -53,6 +53,7 @@
     <Compile Include="Framework45\SystemLazySample.cs" />
     <Compile Include="Framework45\SystemReflectionSample.cs" />
     <Compile Include="Keywords\DelegateSample.cs" />
+    <Compile Include="Keywords\DynamicSample.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestMethodAttribute.cs" />

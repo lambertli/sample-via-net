@@ -63,6 +63,11 @@ namespace Sample
                 System.Console.WriteLine();
             }
 
+            public static void WriteLine(object obj)
+            {
+                WriteLine("{0}", obj);
+            }
+
             /// <summary>
             /// format with elapsed time and thread id
             /// elapsed millisecend|tread id - message
