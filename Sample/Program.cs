@@ -30,7 +30,8 @@ namespace Sample
             executors.AddRange(new List<Executor>()
             {
                 //new DelegateSample(),
-                new DynamicSample()
+                new DynamicSample(),
+                new EnumSample()
             });
 
             foreach (var executor in executors)
