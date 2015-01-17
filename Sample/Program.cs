@@ -1,5 +1,7 @@
-﻿using Sample.DesignPatterns;
+﻿using Sample.CodeGengeration;
+using Sample.DesignPatterns;
 using Sample.Framework45;
+using Sample.Interview;
 using Sample.Keywords;
 using System;
 using System.Collections.Generic;
@@ -18,7 +20,8 @@ namespace Sample
             executors.AddRange(new List<Executor>()
             {
                 //new ObserverSample(),
-                //new SingletonSample()
+                //new SingletonSample(),
+                //new DecoratorSample()
             });
             //.net framework4.5 samples
             executors.AddRange(new List<Executor>()
@@ -30,9 +33,20 @@ namespace Sample
             executors.AddRange(new List<Executor>()
             {
                 //new DelegateSample(),
-                new DynamicSample(),
-                new EnumSample()
+                //new DynamicSample(),
+                //new EnumSample()
             });
+            //some interview test collection
+            executors.AddRange(new List<Executor>() 
+            {
+                //new AlgorithmI()
+            });
+            //Code gengeration
+            executors.AddRange(new List<Executor>() 
+            {
+                new SqlGengerateSample()
+            });
+            
 
             foreach (var executor in executors)
             {

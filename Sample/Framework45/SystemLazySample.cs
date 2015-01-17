@@ -9,7 +9,6 @@ namespace Sample.Framework45
 {
     class SystemLazySample : Executor
     {
-
         [TestMethod]
         public void Test_Normal_Create()
         {
