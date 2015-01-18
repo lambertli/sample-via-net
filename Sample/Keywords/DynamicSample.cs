@@ -86,6 +86,13 @@ namespace Sample.Keywords
             Console.WriteLine(dyPerson.Name);
         }
 
+        [TestMethod]
+        public void Test_Sample_CustomerDynamic()
+        {
+            dynamic obj = new CustomerDynamicObject();
+            obj.Name = "macy";
+            Console.WriteLine(obj.Name);
+        }
 
         private int Add(int a, int b) 
         {
@@ -95,6 +102,23 @@ namespace Sample.Keywords
         private string Add(string a, string b) 
         {
             return a + b;
+        }
+    }
+
+    class CustomerDynamicObject : DynamicObject 
+    {
+        Dictionary<string, object> ViewData = new Dictionary<string, object>();
+
+        public override bool TrySetMember(SetMemberBinder binder, object value)
+        {
+            this.ViewData[binder.Name] = value;
+            return true;
+        }
+
+        public override bool TryGetMember(GetMemberBinder binder, out object result)
+        {
+            result = this.ViewData[binder.Name];
+            return true;
         }
     }
 }

@@ -1,6 +1,8 @@
-﻿using Sample.Entities;
+﻿using RazorEngine.Templating;
+using Sample.Entities;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,110 +16,185 @@ namespace Sample.CodeGengeration
         [TestMethod]
         public void Test_Generate_Insert_Sql()
         {
-            string sql = GenerateInsertSql("Persons", person, "CreatedBy");
+            string sql = SqlGengerator.BuildInsertSql(person, "Persons", new string[] { "CreatedBy" });
             Console.WriteLine(sql);
         }
 
         [TestMethod]
         public void Test_Generate_Update_Sql()
         {
-            string sql = GenerateUpdateSql("Persons", person, new string[] { "Name", "Age" }, "CreatedBy");
+            string sql = SqlGengerator.BuildUpdateSql(person, "Persons", new string[] { "Name", "Age" }, new string[] { "Name", "Age" });
+            Console.WriteLine(sql);
+        }
+
+        [TestMethod]
+        public void Test_Generate_Upsert_Sql()
+        {
+            string sql = SqlGengerator.BuildUpsertSql(person, "Persons", new string[] { "Name", "Age" }, new string[] { "Name", "Age" });
             Console.WriteLine(sql);
         }
 
         [TestMethod]
         public void Test_Generate_Delete_Sql()
         {
-            string sql = GenerateDeleteSql("Persons", person, new string[] { "Name", "Age" });
+            string sql = SqlGengerator.BuildDeletedSql(person, "Persons", new string[] { "Name", "Age" });
             Console.WriteLine(sql);
         }
 
+        [TestMethod]
+        public void Test_Generate_By_RazorEngine() 
+        {
+            string template = "Hello @Model.Name! Welcome to Razor!";
+            string result = RazorEngine.Razor.Parse(template, new { Name = "World" });
+        }
+    }
+
+    /// <summary>
+    /// Sample sql script gengeration
+    /// </summary>
+    static class SqlGengerator 
+    {
         //insert into [table](ColumnNames) values(ColumnValues) 
-        private string GenerateInsertSql(string tableName, object entity, params string[] ignoreFields)
+        public static string BuildInsertSql(object entity, string tableName, string[] ignoreFields) 
         {
-            StringBuilder sqlBuilder = new StringBuilder();
-            SqlBuildModel model = CreateSqlBuldModel(tableName, entity, null, ignoreFields);
-            if (model.Fields == null)
-                return string.Empty;
-
-            sqlBuilder.AppendFormat("insert into [{0}].[{1}](", model.Schema, model.TableName);
-            sqlBuilder.Append(string.Join(", ", model.Fields.Select(m => string.Format("[{0}]", m.FieldName))));
-            sqlBuilder.Append(") values(");
-            sqlBuilder.Append(string.Join(", ", model.Fields.Select(m => string.Format("{0}{1}{0}", m.IsStringValue ? "'" : "", m.FieldValue.Replace("'", "''")))));
-            sqlBuilder.Append(")");
-
-            return sqlBuilder.ToString();
-        }
-
-        //update [table] set values where conditions
-        private string GenerateUpdateSql(string tableName, object entity, string[] conditions, params string[] ignoreFields)
-        {
-            StringBuilder sqlBuilder = new StringBuilder();
-            SqlBuildModel model = CreateSqlBuldModel(tableName, entity, conditions, ignoreFields);
-            if (model.Fields == null)
-                return string.Empty;
-
-            sqlBuilder.AppendFormat("update [{0}].[{1}] set ", model.Schema, model.TableName);
-            sqlBuilder.Append(string.Join(", ", GenerateFieldStrings(model.Fields)));
-            if (model.Conditions != null) 
+            string template = @"insert into @Model.TableName (@Model.InsertNameString) values(@Model.InsertValueString)";
+            SqlBuildViewModel model = new SqlBuildViewModel(entity, tableName, null, ignoreFields);
+            
+            using(var service = new TemplateService())
             {
-                sqlBuilder.AppendFormat(" where {0}", string.Join(" and ", GenerateFieldStrings(model.Conditions)));
+                string s = service.Parse(template, model,null,null);
             }
-            return sqlBuilder.ToString();
+
+
+            return RazorEngine.Razor.Parse(template, model);
         }
 
-        //delete [table] where conditions
-        private string GenerateDeleteSql(string tableName, object entity, string[] conditions) 
+        //update [table] set values where [conditions]
+        public static string BuildUpdateSql(object entity, string tableName, string[] findFields, string[] ignoreFields)
         {
-            StringBuilder sqlBuilder = new StringBuilder();
-            SqlBuildModel model = CreateSqlBuldModel(tableName, entity, conditions, null);
-            sqlBuilder.AppendFormat("delete [{0}].[{1}] ", model.Schema, model.TableName);
-            if (model.Conditions != null)
+            string template = @"update @Model.TableName set @Model.UpdateString where @Model.WhereString";
+            SqlBuildViewModel model = new SqlBuildViewModel(entity, tableName, findFields, ignoreFields);
+            return RazorEngine.Razor.Parse(template, model);
+        }
+
+        //if exists(select 1 from [table] where [conditions])
+        //begin
+        //  update [table] set values where conditions
+        //end
+        //else
+        //  insert into [table](ColumnNames) values(ColumnValues) 
+        //end
+        public static string BuildUpsertSql(object entity, string tableName, string[] findFields, string[] ignoreFields)
+        {
+            string template =
+@"if exists(select 1 from @Model.TableName where  @Model.WhereString)
+  begin
+    update @Model.TableName set @Model.UpdateString where @Model.WhereString
+  end
+  else
+    insert into @Model.TableName (@Model.InsertNameString) values(@Model.InsertValueString)
+  end
+";
+            SqlBuildViewModel model = new SqlBuildViewModel(entity, tableName, findFields, ignoreFields);
+            return RazorEngine.Razor.Parse(template, model);
+
+        }
+
+        //delete [table] where [conditions]
+        public static string BuildDeletedSql(object entity, string tableName, string[] findFields)
+        {
+            string template = @"delete @Model.TableName where @Model.WhereString";
+            SqlBuildViewModel model = new SqlBuildViewModel(entity, tableName, findFields, null);
+            return RazorEngine.Razor.Parse(template, model);
+        }
+
+    }
+
+    public class SqlBuildViewModel
+    {
+        object entity;
+        string tableName;
+        string[] findFields;
+        string[] ignoreFields;
+        List<dynamic> entityFields;
+
+        public SqlBuildViewModel(object entity, string tableName, string[] findFields, string[] ignoreFields)
+        {
+            if (entity == null) throw new ArgumentNullException("entity");
+
+            this.entity = entity;
+            this.tableName = tableName;
+            this.findFields = findFields;
+            this.ignoreFields = ignoreFields;
+            this.entityFields = new List<dynamic>();
+
+            InitTableName();
+            InitFileds();
+        }
+
+        public string TableName { get; private set; }
+        public string InsertNameString
+        {
+            get
             {
-                sqlBuilder.AppendFormat(" where {0}", string.Join(" and ", GenerateFieldStrings(model.Conditions)));
+                return string.Join(", ", entityFields.Where(m => !m.IsIgnored).Select(m => string.Format("[{0}]", m.FieldName)).ToArray());
             }
-            return sqlBuilder.ToString();
         }
-
-        private string[] GenerateFieldStrings(IEnumerable<SqlColumn> columns, string joinSyblem="=")
+        public string InsertValueString
         {
-            return columns.Select(m => string.Format("[{0}] {3} {1}{2}{1}", m.FieldName, m.IsStringValue ? "'" : "", m.FieldValue.Replace("'", "''"), joinSyblem)).ToArray();
-        }
-
-        private SqlBuildModel CreateSqlBuldModel(string tableName, object entity, string[] whereFields, string[] ignoreFields)
-        {
-            SqlBuildModel model = new SqlBuildModel();
-            if (tableName.IndexOf('.') != -1)
+            get
             {
-                model.Schema = tableName.Split('.')[0];
-                model.TableName = tableName.Split('.')[1];
+                return string.Join(", ", entityFields.Where(m => !m.IsIgnored).Select(m => string.Format("{0}{1}{0}", m.IsStringValue ? "'" : "", m.FieldValue.Replace("'", "''"))).ToArray());
+            }
+        }
+        public string UpdateString
+        {
+            get
+            {
+                return string.Join(", ", entityFields.Where(m => !m.IsIgnored).Select(m => string.Format("[{0}] {3} {1}{2}{1}", m.FieldName, m.IsStringValue ? "'" : "", m.FieldValue.Replace("'", "''"), "=")).ToArray());
+            }
+        }
+        public string WhereString
+        {
+            get
+            {
+                return string.Join(", ", entityFields.Where(m => m.IsFindField).Select(m => string.Format("[{0}] {3} {1}{2}{1}", m.FieldName, m.IsStringValue ? "'" : "", m.FieldValue.Replace("'", "''"), " and ")).ToArray());
+            }
+        }
+
+        private void InitTableName()
+        {
+            if (string.IsNullOrWhiteSpace(tableName))
+            {
+                this.TableName = string.Format("[dbo].[{0}]", entity.GetType().Name);
             }
             else
             {
-                model.TableName = tableName;
+                if (tableName.IndexOf('.') != -1)
+                {
+                    this.TableName = string.Format("[{0}].[{1}]", tableName.Split('.')[0], tableName.Split('.')[1]);
+                }
+                else
+                {
+                    this.TableName = string.Format("[dbo].[{0}]", tableName);
+                }
             }
-            model.Fields = CreateSqlColumn(entity, ignoreFields);
-
-            if (whereFields != null)
-            {
-                model.Conditions = model.Fields.Where(m => whereFields.Contains(m.FieldName));
-            }
-            return model;
         }
 
-        private IEnumerable<SqlColumn> CreateSqlColumn(object entity, params string[] ignoreFields)
+        private void InitFileds()
         {
-            IList<SqlColumn> columns = new List<SqlColumn>();
             Type type = entity.GetType();
             var properties = type.GetProperties();
             foreach (var property in properties)
             {
-                if (property.CanRead && (ignoreFields == null || !ignoreFields.Contains(property.Name)))
+                if (property.CanRead)
                 {
-                    var sqlColumn = new SqlColumn();
-                    sqlColumn.FieldName = property.Name;
-                    sqlColumn.FieldValue = "null";
-                    sqlColumn.IsStringValue = false;
+                    dynamic column = new ExpandoObject();
+                    column.FieldName = property.Name;
+                    column.FieldValue = "null";
+                    column.IsStringValue = false;
+                    column.IsIgnored = ignoreFields != null && ignoreFields.Contains(property.Name);
+                    column.IsFindField = findFields != null && findFields.Contains(property.Name);
 
                     object value = property.GetValue(entity);
                     if (value != null)
@@ -125,14 +202,14 @@ namespace Sample.CodeGengeration
                         switch (Type.GetTypeCode(property.PropertyType))
                         {
                             case TypeCode.Boolean:
-                                sqlColumn.IsStringValue = false;
-                                sqlColumn.FieldValue = (bool)value ? "1" : "0";
+                                column.IsStringValue = false;
+                                column.FieldValue = (bool)value ? "1" : "0";
                                 break;
                             case TypeCode.String:
                             case TypeCode.Char:
                             case TypeCode.DateTime:
-                                sqlColumn.IsStringValue = true;
-                                sqlColumn.FieldValue = value.ToString();
+                                column.IsStringValue = true;
+                                column.FieldValue = value.ToString();
                                 break;
                             case TypeCode.Int16:
                             case TypeCode.Int32:
@@ -145,8 +222,8 @@ namespace Sample.CodeGengeration
                             case TypeCode.Decimal:
                             case TypeCode.SByte:
                             case TypeCode.Byte:
-                                sqlColumn.IsStringValue = false;
-                                sqlColumn.FieldValue = value.ToString();
+                                column.IsStringValue = false;
+                                column.FieldValue = value.ToString();
                                 break;
                             case TypeCode.Object:
                             case TypeCode.DBNull:
@@ -157,32 +234,9 @@ namespace Sample.CodeGengeration
                         }
                     }
 
-                    columns.Add(sqlColumn);
+                    this.entityFields.Add(column);
                 }
             }
-            return columns;
         }
-    }
-
-    class SqlBuildModel
-    {
-        private string _schema = "dbo";
-        public string Schema
-        {
-            get { return _schema; }
-            set { _schema = value; }
-        }
-
-        public string TableName { get; set; }
-
-        public IEnumerable<SqlColumn> Fields { get; set; }
-        public IEnumerable<SqlColumn> Conditions { get; set; }
-    }
-
-    class SqlColumn
-    {
-        public string FieldName { get; set; }
-        public bool IsStringValue { get; set; }
-        public string FieldValue { get; set; }
     }
 }

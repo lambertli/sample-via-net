@@ -27,7 +27,7 @@ namespace Sample.Keywords
         [TestMethod]
         public void Test_KW_Delegate() 
         {
-            Console.WriteLine("Sample cat scream and mouse run awawy");
+            Console.WriteLine("Sample cat scream and mouse run away");
             foreach (var mouse in _mouses) 
             {
                 _cat.ScreamHandler += mouse.RunAway;
@@ -41,7 +41,7 @@ namespace Sample.Keywords
         [TestMethod]
         public void Test_KW_Action()
         {
-            Console.WriteLine("Sample cat scream and mouse run awawy");
+            Console.WriteLine("Sample cat scream and mouse run away");
             IList<Action> actions = new List<Action>();
             foreach (var mouse in _mouses)
             {
