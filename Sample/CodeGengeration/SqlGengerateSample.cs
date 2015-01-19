@@ -1,4 +1,5 @@
-﻿using RazorEngine.Templating;
+﻿using RazorEngine;
+using RazorEngine.Templating;
 using Sample.Entities;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace Sample.CodeGengeration
 {
     class SqlGengerateSample : Executor
     {
-        Person person = new Person { Name = "小李", Age = 28, Gender = Gender.Male, PersonWebsiteUrl = "http://zzk.cnblogs.com/s?w=GetTypeCode+enum&t='b" };
+        Person person = new Person { Name = "小李", Age = 28, Gender = Gender.Female, PersonWebsiteUrl = "http://zzk.cnblogs.com/s?w=GetTypeCode+enum&t='b" };
 
         [TestMethod]
         public void Test_Generate_Insert_Sql()
@@ -40,13 +41,6 @@ namespace Sample.CodeGengeration
             string sql = SqlGengerator.BuildDeletedSql(person, "Persons", new string[] { "Name", "Age" });
             Console.WriteLine(sql);
         }
-
-        [TestMethod]
-        public void Test_Generate_By_RazorEngine() 
-        {
-            string template = "Hello @Model.Name! Welcome to Razor!";
-            string result = RazorEngine.Razor.Parse(template, new { Name = "World" });
-        }
     }
 
     /// <summary>
@@ -57,24 +51,17 @@ namespace Sample.CodeGengeration
         //insert into [table](ColumnNames) values(ColumnValues) 
         public static string BuildInsertSql(object entity, string tableName, string[] ignoreFields) 
         {
-            string template = @"insert into @Model.TableName (@Model.InsertNameString) values(@Model.InsertValueString)";
+            string template = @"insert into @Model.TableName (@Model.InsertNameString) values (@Raw(Model.InsertValueString))";
             SqlBuildViewModel model = new SqlBuildViewModel(entity, tableName, null, ignoreFields);
-            
-            using(var service = new TemplateService())
-            {
-                string s = service.Parse(template, model,null,null);
-            }
-
-
-            return RazorEngine.Razor.Parse(template, model);
+            return Engine.Razor.RunCompile(template, "insert_template", null, model);
         }
 
         //update [table] set values where [conditions]
         public static string BuildUpdateSql(object entity, string tableName, string[] findFields, string[] ignoreFields)
         {
-            string template = @"update @Model.TableName set @Model.UpdateString where @Model.WhereString";
+            string template = @"update @Model.TableName set @Raw(Model.UpdateString) where @Raw(Model.WhereString)";
             SqlBuildViewModel model = new SqlBuildViewModel(entity, tableName, findFields, ignoreFields);
-            return RazorEngine.Razor.Parse(template, model);
+            return Engine.Razor.RunCompile(template, "update_template", null, model);
         }
 
         //if exists(select 1 from [table] where [conditions])
@@ -86,26 +73,25 @@ namespace Sample.CodeGengeration
         //end
         public static string BuildUpsertSql(object entity, string tableName, string[] findFields, string[] ignoreFields)
         {
-            string template =
-@"if exists(select 1 from @Model.TableName where  @Model.WhereString)
-  begin
-    update @Model.TableName set @Model.UpdateString where @Model.WhereString
-  end
-  else
-    insert into @Model.TableName (@Model.InsertNameString) values(@Model.InsertValueString)
-  end
+            string template =@"
+if exists(select 1 from @Model.TableName where  @Raw(Model.WhereString))
+begin
+    update @Model.TableName set @Raw(Model.UpdateString) where @Raw(Model.WhereString)
+end
+else
+    insert into @Model.TableName (@Model.InsertNameString) values(@Raw(Model.InsertValueString))
+end
 ";
             SqlBuildViewModel model = new SqlBuildViewModel(entity, tableName, findFields, ignoreFields);
-            return RazorEngine.Razor.Parse(template, model);
-
+            return Engine.Razor.RunCompile(template, "upsert_template", null, model);
         }
 
         //delete [table] where [conditions]
         public static string BuildDeletedSql(object entity, string tableName, string[] findFields)
         {
-            string template = @"delete @Model.TableName where @Model.WhereString";
+            string template = @"delete @Model.TableName where @Raw(Model.WhereString)";
             SqlBuildViewModel model = new SqlBuildViewModel(entity, tableName, findFields, null);
-            return RazorEngine.Razor.Parse(template, model);
+            return Engine.Razor.RunCompile(template, "delete_template", null, model);
         }
 
     }
@@ -158,7 +144,7 @@ namespace Sample.CodeGengeration
         {
             get
             {
-                return string.Join(", ", entityFields.Where(m => m.IsFindField).Select(m => string.Format("[{0}] {3} {1}{2}{1}", m.FieldName, m.IsStringValue ? "'" : "", m.FieldValue.Replace("'", "''"), " and ")).ToArray());
+                return string.Join(" and ", entityFields.Where(m => m.IsFindField).Select(m => string.Format("[{0}] {3} {1}{2}{1}", m.FieldName, m.IsStringValue ? "'" : "", m.FieldValue.Replace("'", "''"), "=")).ToArray());
             }
         }
 
@@ -197,43 +183,40 @@ namespace Sample.CodeGengeration
                     column.IsFindField = findFields != null && findFields.Contains(property.Name);
 
                     object value = property.GetValue(entity);
-                    if (value != null)
+                    switch (Type.GetTypeCode(property.PropertyType))
                     {
-                        switch (Type.GetTypeCode(property.PropertyType))
-                        {
-                            case TypeCode.Boolean:
-                                column.IsStringValue = false;
-                                column.FieldValue = (bool)value ? "1" : "0";
-                                break;
-                            case TypeCode.String:
-                            case TypeCode.Char:
-                            case TypeCode.DateTime:
+                        case TypeCode.Boolean:
+                            if (value != null) column.FieldValue = (bool)value ? "1" : "0";
+                            break;
+                        case TypeCode.String:
+                        case TypeCode.Char:
+                        case TypeCode.DateTime:
+                            if (value != null)
+                            {
                                 column.IsStringValue = true;
                                 column.FieldValue = value.ToString();
-                                break;
-                            case TypeCode.Int16:
-                            case TypeCode.Int32:
-                            case TypeCode.Int64:
-                            case TypeCode.UInt16:
-                            case TypeCode.UInt32:
-                            case TypeCode.UInt64:
-                            case TypeCode.Single:
-                            case TypeCode.Double:
-                            case TypeCode.Decimal:
-                            case TypeCode.SByte:
-                            case TypeCode.Byte:
-                                column.IsStringValue = false;
-                                column.FieldValue = value.ToString();
-                                break;
-                            case TypeCode.Object:
-                            case TypeCode.DBNull:
-                            case TypeCode.Empty:
-                            default:
-                                //ingore this type fields
-                                continue;
-                        }
+                            }
+                            break;
+                        case TypeCode.Int16:
+                        case TypeCode.Int32:
+                        case TypeCode.Int64:
+                        case TypeCode.UInt16:
+                        case TypeCode.UInt32:
+                        case TypeCode.UInt64:
+                        case TypeCode.Single:
+                        case TypeCode.Double:
+                        case TypeCode.Decimal:
+                        case TypeCode.SByte:
+                        case TypeCode.Byte:
+                            if (value != null) column.FieldValue = property.PropertyType.IsEnum ? ((int)value).ToString() : value.ToString();
+                            break;
+                        case TypeCode.Object:
+                        case TypeCode.DBNull:
+                        case TypeCode.Empty:
+                        default:
+                            //ingore this type fields
+                            continue;
                     }
-
                     this.entityFields.Add(column);
                 }
             }

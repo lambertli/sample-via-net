@@ -46,7 +46,7 @@ namespace Sample.Framework45
         [TestMethod]
         public void Test_Create_Instance() 
         {
-            Assembly assembly = this.GetType().Assembly;
+            Assembly assembly = Assembly.Load("Sample"); //this.GetType().Assembly;
 
             Console.WriteLine("Create instance with non-parameters constructor.");
             SampleEntity entity1 = assembly.CreateInstance("Sample.Entities.SampleEntity") as SampleEntity;
